@@ -40,6 +40,36 @@ app.post('/api/items', (req, res) => {
     res.status(201).json(newItem);
 });
 
+app.put('/api/items/:id', (req, res) => {
+    const id = Number(req.params.id);
+    const item = items.find(item => item.id === id);
+
+    if(!item) {
+        return res.status(404).json({ error: "Item não encontrado"});
+    }
+
+    const {name} = req.body;
+    if(!name) {
+        return res.status(400).json({ error: 'O campo Name é obrigatório'});
+    }
+
+    item.name = name;
+    res.json(item);
+});
+
+app.delete('/api/items/:id', (req, res) => {
+    const id = Number(req.params.id);
+    const index = items.findIndex(item => item.id === id);
+
+    if(index === -1) {
+        return res.status(404).json({ error: "Item não encontrado"});
+    }
+
+    items.splice(index, 1);
+
+    res.status(204).send();
+});
+
 app.listen(PORT, () => {
     console.log(`API a executar em http://localhost:${PORT}`);
 });
