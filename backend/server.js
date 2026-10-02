@@ -8,6 +8,11 @@ const items = [
     { id: 2, name: 'Item2'}
 ];
 
+// GET ////////////////////////////
+
+// GET /api/items
+// GET /api/items?name
+
 app.get('/api/items', (req, res) => {
     const {name, sort, order, page, limit } = req.query;
 
@@ -15,7 +20,11 @@ app.get('/api/items', (req, res) => {
 
     if (name !== undefined) {
         if(typeof name !== 'string') {
-            return res.status(400).json({error: 'Parametro name invalido'});
+            return res.status(400).type('application/problem+json').json({
+                status: 400,
+                title: 'Pedido inválido',
+                detail: 'Parametro name inválido'
+            });
         }
         const term = name.trim().toLowerCase();
         result = result.filter(item => 
@@ -25,7 +34,11 @@ app.get('/api/items', (req, res) => {
 
     if (sort) {
         if (sort !== 'id' && sort !== 'name') {
-            return res.status(400).json({error: "Parametro sort invalido"});
+            return res.status(400).type('application/problem+json').json({
+                status: 400,
+                title: 'Pedido inválido',
+                detail: 'Parametro sort inválido'
+            });
         }
         const orderDir = (order && order.toLowerCase() === 'desc') ? -1 : 1;
         result.sort((a, b) => {
@@ -40,7 +53,11 @@ app.get('/api/items', (req, res) => {
         const limitNum = Number(limit || 10);
 
         if (!Number.isInteger(pageNum) || pageNum < 1 || !Number.isInteger(limitNum) || limitNum < 1) {
-            return res.status(400).json({error: "Parametros de paginação invalidos. Use integer"});
+            return res.status(400).type('application/problem+json').json({
+                status: 400,
+                title: 'Pedido inválido',
+                detail: 'Parametros de paginação inválidos. Use integer'
+            });
         }
 
         const total = result.length;
@@ -58,12 +75,16 @@ app.get('/api/items', (req, res) => {
     res.json(result);
 });
 
+// GET /api/items/:id
+
 app.get(`/api/items/:id`, (req, res) => {
     const id = Number(req.params.id);
 
     if (!Number.isInteger(id) || id <= 0) {
-        return res.status(400).json({
-            error: 'id invalido'
+        return res.status(400).type('application/problem+json').json({
+            status: 400,
+            title: 'Pedido inválido',
+            detail: 'id inválido'
         });
     }
 
@@ -72,11 +93,21 @@ app.get(`/api/items/:id`, (req, res) => {
     res.status(200).json(item);
 });
 
+
+// POST /////////////////////////////////////////
+
+// POST /api/itmes
+
+
 app.post('/api/items', (req, res) => {
     const { name } = req.body;
 
    if (typeof name !== 'string' || name.trim() === '') {
-    return res.status(400).json({error: 'name é obrigatorio e deve ser texto nao vazio'});
+        return res.status(400).type('application/problem+json').json({
+            status: 400,
+            title: 'Operação Inválida',
+            detail: 'Campo name é obrigatório e deve ser texto não vazio.'
+        });
    }
 
     const newItem = {
@@ -91,45 +122,73 @@ app.post('/api/items', (req, res) => {
     res.status(201).json(newItem);
 });
 
+//PUT /////////////////////////////////////
+
+// PUT /api/items/:id
+
 app.put('/api/items/:id', (req, res) => {
     const id = Number(req.params.id);
     const item = items.find(item => item.id === id);
 
     if (!Number.isInteger(id) || id <= 0) {
-        return res.status(400).json({
-            error: 'id invalido'
+        return res.status(400).type('application/problem+json').json({
+            status: 400,
+            title: 'Pedido inválido',
+            detail: 'id inválido'
         });
     }
 
     if(!item) {
-        return res.status(404).json({ error: "Item não encontrado"});
+        return res.status(404).type('application/problem+json').json({
+            status: 404,
+            title: 'Não encontrado',
+            detail: 'Item não encontrado'
+        });
     }
 
     const {name} = req.body;
     if(!name) {
-        return res.status(400).json({ error: 'O campo Name é obrigatório'});
+        return res.status(400).type('application/problem+json').json({
+            status: 400,
+            title: 'Operação inválida',
+            detail: 'O campo name é obrigatório'
+        });
     }
 
     if (typeof name !== 'string' || name.trim() === '') {
-    return res.status(400).json({error: 'name é obrigatorio e deve ser texto nao vazio'});
+        return res.status(400).type('application/problem+json').json({
+            status: 400,
+            title: 'Operação Inválida',
+            detail: 'Campo name é obrigatório e deve ser texto não vazio.'
+        });
    }
 
     item.name = name.trim();
     res.status(200).json(items);
 });
 
+// DELETE
+
+// DELETE /api/items/:id
+
 app.delete('/api/items/:id', (req, res) => {
     const id = Number(req.params.id);
     const index = items.findIndex(item => item.id === id);
 
     if (!Number.isInteger(id) || id <= 0) {
-        return res.status(400).json({
-            error: 'id invalido'
+        return res.status(400).type('application/problem+json').json({
+            status: 400,
+            title: 'Pedido inválido',
+            detail: 'id inválido'
         });
     }
 
     if(index === -1) {
-        return res.status(404).json({ error: "Item não encontrado"});
+        return res.status(404).type('application/problem+json').json({
+            status: 404,
+            title: 'Não encontrado',
+            detail: 'Item não encontrado'
+        })
     }
 
     items.splice(index, 1);
