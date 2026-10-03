@@ -211,6 +211,34 @@ app.delete('/api/items/:id', (req, res) => {
     res.status(204).send();
 });
 
+
+// rota inexistente
+app.use((req, res) => {
+    return res.status(404).type('application/problem+json').json({
+        status: 404,
+        title: "Não Encontrado",
+        detail: "Rota não existe"
+    });
+});
+
+// malformatação json ou inesperado
+app.use((err, req, res, next) => {
+    if (err.type === 'entity.parse.failed') {
+        return res.status(400).type('application/problem+json').json({
+            status: 400,
+            title: "Pedido Inválido",
+            detail: "JSON malformatado"
+        });
+    }
+
+    console.error(err);
+    return res.status(500).type('application/problem+json').json({
+        status: 500,
+        title: "Erro inesperado",
+        detail: "Erro interno"
+    })
+});
+
 app.listen(PORT, () => {
     console.log(`API a executar em http://localhost:${PORT}`);
 });
