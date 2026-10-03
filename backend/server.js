@@ -98,7 +98,7 @@ app.get(`/api/items/:id`, (req, res) => {
     if (!item) {
         return res.status(404).type('application/problem+json').json({
             status: 404,
-            title: 'Pedido invalido',
+            title: 'Não Encontrado',
             detail: 'id inexistente'
         })
     }
@@ -113,7 +113,9 @@ app.get(`/api/items/:id`, (req, res) => {
 
 
 app.post('/api/items', (req, res) => {
-    const { name } = req.body;
+
+    // {} para dar erro 400 caso o body esteja vazio 
+    const { name } = req.body || {};
 
    if (typeof name !== 'string' || name.trim() === '') {
         return res.status(400).type('application/problem+json').json({
@@ -131,6 +133,8 @@ app.post('/api/items', (req, res) => {
     }
 
     items.push(newItem);
+
+    res.location('/api/items/' + newItem.id);
 
     res.status(201).json(newItem);
 });
@@ -151,6 +155,17 @@ app.put('/api/items/:id', (req, res) => {
 
     const id = Number(req.params.id);
 
+    const {name} = req.body || {};
+
+    if (typeof name !== 'string' || name.trim() === '') {
+        return res.status(400).type('application/problem+json').json({
+            status: 400,
+            title: 'Operação Inválida',
+            detail: 'Campo name é obrigatório e deve ser texto não vazio.'
+        });
+   }
+
+
     const item = items.find(item => item.id === id);
 
     if(!item) {
@@ -161,25 +176,8 @@ app.put('/api/items/:id', (req, res) => {
         });
     }
 
-    const {name} = req.body;
-    if(!name) {
-        return res.status(400).type('application/problem+json').json({
-            status: 400,
-            title: 'Operação inválida',
-            detail: 'O campo name é obrigatório'
-        });
-    }
-
-    if (typeof name !== 'string' || name.trim() === '') {
-        return res.status(400).type('application/problem+json').json({
-            status: 400,
-            title: 'Operação Inválida',
-            detail: 'Campo name é obrigatório e deve ser texto não vazio.'
-        });
-   }
-
     item.name = name.trim();
-    res.status(200).json(items);
+    res.status(200).json(item);
 });
 
 // DELETE
