@@ -78,9 +78,11 @@ app.get('/api/items', (req, res) => {
 // GET /api/items/:id
 
 app.get(`/api/items/:id`, (req, res) => {
-    const id = Number(req.params.id);
 
-    if (!Number.isInteger(id) || id <= 0) {
+    // regra para validar o input do id
+    // ser obrigatoriamente inteiro; não permitir letras ou caracteres especiais
+
+    if (!/^[1-9]\d*$/.test(req.params.id)) {
         return res.status(400).type('application/problem+json').json({
             status: 400,
             title: 'Pedido inválido',
@@ -88,7 +90,18 @@ app.get(`/api/items/:id`, (req, res) => {
         });
     }
 
+    const id = Number(req.params.id);
+
     const item = items.find(item => item.id === id);
+
+    // validação de erro de id não existente
+    if (!item) {
+        return res.status(404).type('application/problem+json').json({
+            status: 404,
+            title: 'Pedido invalido',
+            detail: 'id inexistente'
+        })
+    }
 
     res.status(200).json(item);
 });
@@ -127,16 +140,18 @@ app.post('/api/items', (req, res) => {
 // PUT /api/items/:id
 
 app.put('/api/items/:id', (req, res) => {
-    const id = Number(req.params.id);
-    const item = items.find(item => item.id === id);
-
-    if (!Number.isInteger(id) || id <= 0) {
+    
+    if (!/^[1-9]\d*$/.test(req.params.id)) {
         return res.status(400).type('application/problem+json').json({
             status: 400,
             title: 'Pedido inválido',
             detail: 'id inválido'
         });
     }
+
+    const id = Number(req.params.id);
+
+    const item = items.find(item => item.id === id);
 
     if(!item) {
         return res.status(404).type('application/problem+json').json({
@@ -172,16 +187,18 @@ app.put('/api/items/:id', (req, res) => {
 // DELETE /api/items/:id
 
 app.delete('/api/items/:id', (req, res) => {
-    const id = Number(req.params.id);
-    const index = items.findIndex(item => item.id === id);
 
-    if (!Number.isInteger(id) || id <= 0) {
+    if (!/^[1-9]\d*$/.test(req.params.id)) {
         return res.status(400).type('application/problem+json').json({
             status: 400,
             title: 'Pedido inválido',
             detail: 'id inválido'
         });
     }
+
+    const id = Number(req.params.id);
+
+    const index = items.findIndex(item => item.id === id);
 
     if(index === -1) {
         return res.status(404).type('application/problem+json').json({
